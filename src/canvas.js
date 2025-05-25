@@ -44,7 +44,9 @@ export class Canvas{
 
   // イベント設定
   set_event(){
-    window.addEventListener("resize", this.resize_window.bind(this))
+    // window.addEventListener("resize", this.resize_window.bind(this)) // windowサイズイベント利用
+    const observer = new ResizeObserver(this.resize_window.bind(this))
+    observer.observe(this.canvas)
   }
 
   // イベント処理 : windowリサイズ
