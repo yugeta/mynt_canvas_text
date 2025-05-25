@@ -1,4 +1,4 @@
-
+import { LoadText } from "./load_text.js"
 
 export class Canvas{
   setting = {
@@ -18,18 +18,13 @@ export class Canvas{
   canvas = null
 
   constructor(options){
+    if(!options || !options.text){return}
     this.options = Object.assign(this.setting, options)
     this.options.line_height = this.options.line_height || this.options.font_size * 1.5
-    this.init()
-    this.set_event()
-  }
-  
-  async init(){
     this.canvas = this.set_canvas(this.options.selector)
-    if(!this.canvas){return}
-    this.text  = await this.load_text()
     this.set_canvas_size()
     this.view()
+    this.set_event()
   }
 
   view(){
@@ -86,7 +81,6 @@ export class Canvas{
   }
 
   get_font(){
-    // return `${this.setting.font_weight} ${this.setting.font_size}px ${this.setting.font_family}`
     let fonts = []
     if(this.setting.font_style){
       fonts.push(this.setting.font_style)
@@ -102,20 +96,11 @@ export class Canvas{
     return fonts.join(" ")
   }
 
-  async load_text(){
-    if(!this.setting.text_path){return}
-    const res = await fetch(this.setting.text_path, {
-      method: "GET"
-    })
-    .then((res)=>{return res.text()})
-    return res
-  }
-
   // 行毎のテキストとx,y座標を取得
   get_wrapper_lines() {
     const max_width  = this.canvas.width  - (this.setting.padding * 2)
     const lines      = []
-    const paragraphs = this.text.split('\n')
+    const paragraphs = this.options.text.split('\n')
     for(const paragraph of paragraphs){
       let words = paragraph.split('')
       let line = ``
@@ -138,7 +123,6 @@ export class Canvas{
         lines.push({
           text : sub_line,
           x    : this.setting.padding,
-          // y    : this.setting.line_height * (lines.length + 1) + this.setting.padding,
           y    : this.setting.line_height * (lines.length + 1) + this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2,
         })
       }
@@ -149,7 +133,6 @@ export class Canvas{
   // 最大値ないのline情報を取得（最大値オーバーを除外）
   get_range_lines(lines){
     const maxHeight  = this.canvas.height - (this.setting.padding * 2)
-    // const maxHeight  = this.setting.line_height * (lines.length + 1) - (this.setting.padding * 2)
     const maxLines   = Math.floor(maxHeight / this.setting.line_height)
     const datas = []
     for(let i=0; i<lines.length; i++){
@@ -174,8 +157,8 @@ export class Canvas{
     else if(this.canvas.height < this.canvas.offsetHeight){
       this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
     }
+    
     // ★ フォントとスタイルを再設定（canvas 再生成後の初期化必須）
-    // this.ctx.font      = this.setting.font_size + `px serif`
     this.ctx.font      = this.get_font()
     this.ctx.fillStyle = this.setting.text_color
   }
