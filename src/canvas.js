@@ -5,16 +5,21 @@ export class Canvas{
     selector         : null,
     text             : "",
     font_size        : 16,
-    line_height      : 24,
+    line_height      : null,
     padding          : 10,
     text_color       : "#000",
     text_path        : "sample.txt",
     height           : "auto",
+    font_family      : "serif",
+    font_weight      : null,
+    font_style       : null,
+    font_variant     : null,
   }
   canvas = null
 
   constructor(options){
     this.options = Object.assign(this.setting, options)
+    this.options.line_height = this.options.line_height || this.options.font_size * 1.5
     this.init()
     this.set_event()
   }
@@ -77,7 +82,24 @@ export class Canvas{
     this.canvas.width  = this.canvas.offsetWidth
     this.canvas.height = this.canvas.offsetHeight
     this.ctx           = this.canvas.getContext("2d")
-    this.ctx.font      = this.setting.font_size + `px serif`
+    this.ctx.font      = this.get_font()
+  }
+
+  get_font(){
+    // return `${this.setting.font_weight} ${this.setting.font_size}px ${this.setting.font_family}`
+    let fonts = []
+    if(this.setting.font_style){
+      fonts.push(this.setting.font_style)
+    }
+    if(this.setting.font_variant){
+      fonts.push(this.setting.font_variant)
+    }
+    if(this.setting.font_weight){
+      fonts.push(this.setting.font_weight)
+    }
+    fonts.push(`${this.setting.font_size}px`)
+    fonts.push(this.setting.font_family)
+    return fonts.join(" ")
   }
 
   async load_text(){
@@ -153,7 +175,8 @@ export class Canvas{
       this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
     }
     // ★ フォントとスタイルを再設定（canvas 再生成後の初期化必須）
-    this.ctx.font      = this.setting.font_size + `px serif`
+    // this.ctx.font      = this.setting.font_size + `px serif`
+    this.ctx.font      = this.get_font()
     this.ctx.fillStyle = this.setting.text_color
   }
 
