@@ -4,9 +4,10 @@ class Demo{
   constructor(){
     new Canvas({
       selector   : `.demo`,
-      text_path  : `sample.txt`,
+      text_path  : `kintaro.txt`,
       text_color : `blue`,
       padding    : 20,
+      height     : 200,
     })
   }
 }

@@ -9,6 +9,7 @@ export class Canvas{
     padding          : 10,
     text_color       : "#000",
     text_path        : "sample.txt",
+    height           : "auto",
   }
   canvas = null
 
@@ -21,13 +22,16 @@ export class Canvas{
   async init(){
     this.canvas = this.set_canvas(this.options.selector)
     if(!this.canvas){return}
-    this.set_canvas_size()
     this.text  = await this.load_text()
+    this.set_canvas_size()
     this.view()
   }
 
   view(){
-    const lines = this.get_wrapper_lines()
+    const long_lines = this.get_wrapper_lines()
+    const short_lines = this.get_range_lines(long_lines)
+
+    const lines = this.setting.height === "auto" ? long_lines : short_lines
     this.reset_canvas(lines)
     this.clear_canvas()
     this.draw_lines(lines)
@@ -87,23 +91,19 @@ export class Canvas{
 
   // 行毎のテキストとx,y座標を取得
   get_wrapper_lines() {
-    const text       = this.text
     const max_width  = this.canvas.width  - (this.setting.padding * 2)
-    const maxHeight  = this.canvas.height - (this.setting.padding * 2)
-    const maxLines   = Math.floor(maxHeight / this.setting.line_height)
     const lines      = []
-    const paragraphs = text.split('\n')
-    let num          = 1
-    for (const paragraph of paragraphs) {
+    const paragraphs = this.text.split('\n')
+    for(const paragraph of paragraphs){
       let words = paragraph.split('')
       let line = ``
       const sub_lines = []
       let num_lines = 0
-      for (const word of words) {
+      for(const word of words){
         sub_lines[num_lines] = sub_lines[num_lines] || ""
         const testLine = sub_lines[num_lines] + word
         const width = this.ctx.measureText(testLine).width
-        if (width > max_width && line !== '') {
+        if(width > max_width && line !== ''){
           num_lines++
           line = word
         } 
@@ -115,21 +115,42 @@ export class Canvas{
       for(const sub_line of sub_lines){
         lines.push({
           text : sub_line,
-          x : this.setting.padding,
-          y : this.setting.line_height * num + this.setting.padding,
+          x    : this.setting.padding,
+          // y    : this.setting.line_height * (lines.length + 1) + this.setting.padding,
+          y    : this.setting.line_height * (lines.length + 1) + this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2,
         })
-        num++
-        if(lines.length >= maxLines){break}
       }
-      if(lines.length >= maxLines){break}
     }
-    return lines;
+    return lines
+  }
+
+  // 最大値ないのline情報を取得（最大値オーバーを除外）
+  get_range_lines(lines){
+    const maxHeight  = this.canvas.height - (this.setting.padding * 2)
+    // const maxHeight  = this.setting.line_height * (lines.length + 1) - (this.setting.padding * 2)
+    const maxLines   = Math.floor(maxHeight / this.setting.line_height)
+    const datas = []
+    for(let i=0; i<lines.length; i++){
+      let text = lines[i].text
+      if(datas.length +1 >= maxLines){
+        lines[i].text = text.split('').slice(0,-1).join('') + "..."
+        datas.push(lines[i])
+        break
+      }
+      else{
+        datas.push(lines[i])
+      }
+    }
+    return datas;
   }
 
   reset_canvas(lines){
     // ★ 必要な高さを計算して canvas を再設定（ここで高さ確定）
-    if(this.canvas.height < this.canvas.offsetHeight){
-      this.canvas.height = lines.length * this.setting.line_height + 20
+    if(this.setting.height === "auto"){
+      this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
+    }
+    else if(this.canvas.height < this.canvas.offsetHeight){
+      this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
     }
     // ★ フォントとスタイルを再設定（canvas 再生成後の初期化必須）
     this.ctx.font      = this.setting.font_size + `px serif`

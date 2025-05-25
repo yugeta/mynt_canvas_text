@@ -4,7 +4,11 @@ body{
 
 canvas{
   width:100%;
-  height:300px;
-  /* border:1px solid black; */
+  /* height:300px; */
   background-color:white;
 }
+
+/**
+ * 【注意点】
+ * borderにサイズを持たせると、canvas.offsetWidthなどのサイズがズレるため、border:0;で利用すること。
+ */
