@@ -3,9 +3,15 @@ import { Canvas }   from "../src/canvas.js"
 
 class Demo{
   constructor(){
+    const encode_type = "base64"
+
     new LoadText({
-      text_path : `kintaro_blur.txt`
-    }).promise.then((text)=>{
+      text_path   : `kintaro_blur.txt`,
+      encode_type : encode_type,
+
+    })
+    
+    .promise.then((text)=>{
       new Canvas({
         text        : text,
         selector    : `.demo`,
@@ -16,6 +22,7 @@ class Demo{
         font_family : `"Noto Sans JP", sans-serif`,
         font_weight : "",
         font_style  : "",
+        encode_type : encode_type,
       })
     })
   }

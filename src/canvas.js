@@ -17,12 +17,26 @@ export class Canvas{
   constructor(options){
     if(!options || !options.text){return}
     this.options = Object.assign(this.setting, options)
+    this.options.text = this.text_decode(this.options.text, this.options.encode_type)
     // 文字表示幅のセット（指定がない場合は文字サイズの1.5倍）
     this.options.line_height = this.options.line_height || this.options.font_size * 1.5
     this.canvas = this.set_canvas(this.options.selector)
     this.set_canvas_size()
     this.view()
     this.set_event()
+  }
+
+  // 文字列のでコード（平文の場合はそのまま）
+  text_decode(data , encode_type){
+    if(!data){return ""}
+    switch(encode_type){
+      case "base64":
+        return decodeURIComponent(escape(atob(data)))
+        // return btoa(new TextDecoder("utf-8").decode(new TextEncoder().encode(data)))
+
+      default:
+        return data
+    }
   }
 
   // 表示処理（再描画でも利用する）
