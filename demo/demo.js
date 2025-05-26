@@ -4,7 +4,7 @@ import { Canvas }   from "../src/canvas.js"
 class Demo{
   constructor(){
     new LoadText({
-      text_path : `kintaro.txt`
+      text_path : `kintaro_blur.txt`
     }).promise.then((text)=>{
       new Canvas({
         text        : text,

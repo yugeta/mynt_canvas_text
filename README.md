@@ -22,7 +22,7 @@ Author : Yugeta.Koji
 > https://yugeta.github.io/mynt_canvas_text/demo/
 
 
-# selector
+# Selector
 - 既存のcanvasまたは、親要素を指定する事ができます。(canvasタグを自動判別)
 
 
@@ -30,5 +30,10 @@ Author : Yugeta.Koji
 - 読み込みフォントは、CSSの記述と併用して使えます。
 
 
-# Cauyion
+# Causion
 - テキスト内にHTMLタグは使用できません。
+
+
+# String Tag
+- blue
+> aaa<blur>bbb</blur>ccc

@@ -134,41 +134,94 @@ export class Canvas{
   /**
    * Text
    */
-
-  // 行毎のテキストとx,y座標を取得
   get_wrapper_lines() {
-    const max_width  = this.canvas.width  - (this.setting.padding * 2)
-    const lines      = []
-    const paragraphs = this.options.text.split('\n')
-    for(const paragraph of paragraphs){
-      let words = paragraph.split('')
-      let line = ``
-      const sub_lines = []
-      let num_lines = 0
-      for(const word of words){
-        sub_lines[num_lines] = sub_lines[num_lines] || ""
-        const testLine = sub_lines[num_lines] + word
-        const width = this.ctx.measureText(testLine).width
-        if(width > max_width && line !== ''){
-          num_lines++
-          line = word
-        } 
-        else {
-          line = testLine
+    const max_width    = this.canvas.width  - (this.setting.padding * 2)
+    const text_datas   = this.parse_tagged_text(this.options.text)
+    const lines        = []
+    const y_margin     = this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2
+    let line_count     = 0
+    let line_sub_count = 0
+    for(let line_num=0; line_num<text_datas.length; line_num++){
+      const text_data = text_datas[line_num]
+      line_count++
+      line_sub_count = 0
+      for(const paragraph of text_data.parts){
+        let words = paragraph.text.split('')
+        let line = ``
+        
+        let width = 0
+        for(const word of words){
+          lines[line_count] = lines[line_count] || {}
+          const testLine = (lines[line_count].text || "") + word
+          width = this.ctx.measureText(testLine).width
+          if(width > max_width && line !== ''){
+            line_count++
+            // line_sub_count++
+            line = word
+          } 
+          else {
+            line = testLine
+          }
+
+          const count = line_count
+          // const count = line_count + line_sub_count
+          lines[count] = lines[count] || {}
+          lines[count] = {
+            text : line,
+            x    : this.setting.padding,
+            y    : this.setting.line_height * line_count + y_margin,
+            tag  : paragraph.tag,
+            line_sub_count : line_sub_count,
+          }
         }
-        sub_lines[num_lines] = line
-      }
-      for(const sub_line of sub_lines){
-        lines.push({
-          text : sub_line,
-          x    : this.setting.padding,
-          // 文字幅(line-height)の中間に文字が表示される仕様
-          y    : this.setting.line_height * (lines.length + 1) + this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2,
-        })
+        // line_count++
+        line_sub_count++
       }
     }
     return lines
   }
+
+
+  // テキストをタグ処理する仕様を追加
+  parse_tagged_text(text) {
+    const regex    = /<(\w+)(.*?)>|<\/(\w+)>|([^<>]+)/g
+    const result   = []
+    const tagStack = []
+    const lines = text.split(/\r?\n/)
+
+    for (const line of lines) {
+      const parts = []
+      let match
+      regex.lastIndex = 0 // 正規表現のインデックスをリセット
+
+      while ((match = regex.exec(line)) !== null) {
+        if (match[1]) {
+          // 開始タグ
+          tagStack.push(match[1])
+        } else if (match[3]) {
+          // 終了タグ
+          const idx = tagStack.lastIndexOf(match[3])
+          if (idx !== -1) {
+            tagStack.splice(idx, 1)
+          }
+        } else if (match[4]) {
+          // テキスト部分
+          parts.push({
+            text: match[4],
+            tag: tagStack.length > 0 ? tagStack[tagStack.length - 1] : null
+          });
+        }
+      }
+
+      const plainText = parts.map(p => p.text).join('')
+      result.push({
+        parts,
+        plainText
+      })
+    }
+    return result
+  }
+
 
   // 最大値ないのline情報を取得（最大値オーバーを除外）
   get_range_lines(lines){
@@ -176,6 +229,7 @@ export class Canvas{
     const maxLines   = Math.floor(maxHeight / this.setting.line_height)
     const datas = []
     for(let i=0; i<lines.length; i++){
+      if(!lines[i]){continue}
       let text = lines[i].text
       if(datas.length +1 >= maxLines){
         lines[i].text = text.split('').slice(0,-1).join('') + "..."
@@ -191,8 +245,24 @@ export class Canvas{
 
   // canvas内に文字描画する処理
   draw_lines(lines) {
+    console.log(lines)
     for(const line of lines){
+      if(!line){continue}
+      switch(line.tag){
+        case "blur":
+          this.ctx.filter = "blur(5px)"
+          break
+
+        default:
+          this.ctx.filter = "none"
+          break
+      }
       this.ctx.fillText(line.text, line.x, line.y)
     }
+  }
+
+  // 文字ぼかし処理
+  set_tag(){
+
   }
 }
