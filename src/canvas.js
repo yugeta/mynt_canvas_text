@@ -135,10 +135,10 @@ export class Canvas{
    */
   get_wrapper_lines() {
     const max_width    = this.canvas.width  - this.setting.padding
-    const text_datas   = this.parse_tagged_text(this.options.text)
     const lines        = []
-    const y_margin     = this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2
-    let line_number     = 0
+    const y_margin     = this.setting.padding + (this.setting.line_height - this.setting.font_size / 2)
+    let line_number    = 0
+    const text_datas   = this.parse_tagged_text(this.options.text)
     for(const text_data of text_datas){
       let x = this.setting.padding
       let sub_line_count = 0
@@ -152,23 +152,27 @@ export class Canvas{
             x = this.setting.padding
           }
           lines.push({
-            line_text : paragraph.text,
+            // line_text : paragraph.text,
             text  : word_breaks[i].text,
             x     : x,
-            y     : this.setting.line_height * (line_number + i) + y_margin,
+            y     : this.setting.line_height * (line_number + i + sub_line_count) + y_margin,
             tag   : paragraph.tag,
-            width : word_breaks[i].width,
-            line_count  : word_breaks.length,
-            line_number : line_number,
+
+            // width : word_breaks[i].width,
+            // line_count  : word_breaks.length,
+            // line_number : line_number,
+            // y_margin : y_margin,
+            // padding : this.setting.padding,
+            // font_size : this.setting.font_size,
+            // line_height : this.setting.line_height,
           })
           width = word_breaks[i].width
-          if(i === 0){
-            sub_line_count += word_breaks.length
-          }
         }
+        sub_line_count += word_breaks.length - 1
         x += width
       }
-      line_number += sub_line_count
+
+      line_number += sub_line_count + 1
     }
     return lines
   }
@@ -193,9 +197,14 @@ export class Canvas{
       }
       datas[line_count] = {
         text     : line,
-        width    : width,
-        x_end    : width + x,
-        line_add : line_count,
+        width    : this.ctx.measureText(line).width,
+        // x_end    : width + x,
+        // line_add : line_count,
+        // width    : width,
+        // word : word,
+        // testLine : testLine,
+        // width_x : width + x,
+        // max_width : max_width,
       }
     }
     return datas
