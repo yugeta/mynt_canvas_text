@@ -27,10 +27,11 @@ export class Canvas{
 
   // 表示処理（再描画でも利用する）
   view(){
-    const long_lines = this.get_wrapper_lines()
+    const long_datas = this.get_wrapper_lines()
+    const long_lines = long_datas.lines
     const short_lines = this.get_range_lines(long_lines)
     const lines = this.setting.height === "auto" ? long_lines : short_lines
-    this.reset_canvas(lines)
+    this.reset_canvas(long_datas.line_count)
     this.clear_canvas()
     this.draw_lines(lines)
   }
@@ -115,13 +116,13 @@ export class Canvas{
   }
 
   // canvasの再描画に必要なheightリサイズや、フォント設定処理
-  reset_canvas(lines){
+  reset_canvas(line_count){
     // ★ 必要な高さを計算して canvas を再設定（ここで高さ確定）
     if(this.setting.height === "auto"){
-      this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
+      this.canvas.height = line_count * this.setting.line_height + (this.setting.padding * 2)
     }
     else if(this.canvas.height < this.canvas.offsetHeight){
-      this.canvas.height = lines.length * this.setting.line_height + (this.setting.padding * 2)
+      this.canvas.height = line_count * this.setting.line_height + (this.setting.padding * 2)
     }
     
     // ★ フォントとスタイルを再設定（canvas 再生成後の初期化必須）
@@ -174,7 +175,10 @@ export class Canvas{
 
       line_number += sub_line_count + 1
     }
-    return lines
+    return {
+      lines : lines,
+      line_count : line_number,
+    }
   }
 
   // make line word
