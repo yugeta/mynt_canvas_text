@@ -37,3 +37,8 @@ Author : Yugeta.Koji
 # String Tag
 - blue
 > aaa<blur>bbb</blur>ccc
+
+- タグを閉じていない場合は、文字の最後で閉じる仕様
+- 【注意】 : 多重タグには対応してません。
+
+

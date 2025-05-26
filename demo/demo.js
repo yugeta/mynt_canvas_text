@@ -14,8 +14,8 @@ class Demo{
         font_size   : 16,
         height      : "auto",
         font_family : `"Noto Sans JP", sans-serif`,
-        font_weight : "bold",
-        font_style  : "italic",
+        font_weight : "",
+        font_style  : "",
       })
     })
   }

@@ -1,5 +1,3 @@
-import { LoadText } from "./load_text.js"
-
 export class Canvas{
   setting = {
     selector         : null,
@@ -99,19 +97,20 @@ export class Canvas{
   }
 
   // フォント設定も文字列作成
-  get_font(){
+  get_font(options){
+    options = options || {}
     let fonts = []
-    if(this.setting.font_style){
-      fonts.push(this.setting.font_style)
+    if(this.setting.font_style || options.font_style){
+      fonts.push(options.font_style || this.setting.font_style)
     }
-    if(this.setting.font_variant){
-      fonts.push(this.setting.font_variant)
+    if(this.setting.font_variant || options.font_variant){
+      fonts.push(options.font_variant || this.setting.font_variant)
     }
-    if(this.setting.font_weight){
-      fonts.push(this.setting.font_weight)
+    if(this.setting.font_weight || options.font_weight){
+      fonts.push(options.font_weight || this.setting.font_weight)
     }
-    fonts.push(`${this.setting.font_size}px`)
-    fonts.push(this.setting.font_family)
+    fonts.push(`${(options.font_size || this.setting.font_size)}px`)
+    fonts.push(options.font_family || this.setting.font_family)
     return fonts.join(" ")
   }
 
@@ -135,50 +134,71 @@ export class Canvas{
    * Text
    */
   get_wrapper_lines() {
-    const max_width    = this.canvas.width  - (this.setting.padding * 2)
+    const max_width    = this.canvas.width  - this.setting.padding
     const text_datas   = this.parse_tagged_text(this.options.text)
     const lines        = []
     const y_margin     = this.setting.padding - (this.setting.line_height - this.setting.font_size) / 2
-    let line_count     = 0
-    let line_sub_count = 0
-    for(let line_num=0; line_num<text_datas.length; line_num++){
-      const text_data = text_datas[line_num]
-      line_count++
-      line_sub_count = 0
-      for(const paragraph of text_data.parts){
+    let line_number     = 0
+    for(const text_data of text_datas){
+      let x = this.setting.padding
+      let sub_line_count = 0
+      for(let j=0; j<text_data.parts.length; j++){
+        const paragraph = text_data.parts[j]
         let words = paragraph.text.split('')
-        let line = ``
-        
+        const word_breaks = this.get_line_words(words, max_width, x)
         let width = 0
-        for(const word of words){
-          lines[line_count] = lines[line_count] || {}
-          const testLine = (lines[line_count].text || "") + word
-          width = this.ctx.measureText(testLine).width
-          if(width > max_width && line !== ''){
-            line_count++
-            // line_sub_count++
-            line = word
-          } 
-          else {
-            line = testLine
+        for(let i=0; i<word_breaks.length; i++){
+          if(i >= 1){
+            x = this.setting.padding
           }
-
-          const count = line_count
-          // const count = line_count + line_sub_count
-          lines[count] = lines[count] || {}
-          lines[count] = {
-            text : line,
-            x    : this.setting.padding,
-            y    : this.setting.line_height * line_count + y_margin,
-            tag  : paragraph.tag,
-            line_sub_count : line_sub_count,
+          lines.push({
+            line_text : paragraph.text,
+            text  : word_breaks[i].text,
+            x     : x,
+            y     : this.setting.line_height * (line_number + i) + y_margin,
+            tag   : paragraph.tag,
+            width : word_breaks[i].width,
+            line_count  : word_breaks.length,
+            line_number : line_number,
+          })
+          width = word_breaks[i].width
+          if(i === 0){
+            sub_line_count += word_breaks.length
           }
         }
-        // line_count++
-        line_sub_count++
+        x += width
       }
+      line_number += sub_line_count
     }
     return lines
+  }
+
+  // make line word
+  get_line_words(words, max_width, x){
+    const datas = []
+    let line_count = 0
+    let line = ``
+    let width = 0
+    let line_add = 0
+    for(const word of words){
+      const testLine = (datas[line_count] ? datas[line_count].text : "") + word
+      width = this.ctx.measureText(testLine).width
+      if(width + x > max_width && line !== ''){
+        line_count++
+        line = word
+        x = this.setting.padding
+      } 
+      else {
+        line = testLine
+      }
+      datas[line_count] = {
+        text     : line,
+        width    : width,
+        x_end    : width + x,
+        line_add : line_count,
+      }
+    }
+    return datas
   }
 
 
@@ -245,24 +265,33 @@ export class Canvas{
 
   // canvas内に文字描画する処理
   draw_lines(lines) {
-    console.log(lines)
     for(const line of lines){
       if(!line){continue}
       switch(line.tag){
         case "blur":
           this.ctx.filter = "blur(5px)"
+          this.ctx.fillText(line.text, line.x, line.y)
+          break
+        
+        case "b":
+          this.ctx.font = this.get_font({font_weight: "bold"})
+          this.ctx.fillText(line.text, line.x, line.y)
+          this.ctx.font = this.get_font()
+          break
+
+        case "i":
+          this.ctx.font = this.get_font({font_style: "italic"})
+          this.ctx.fillText(line.text, line.x, line.y)
+          this.ctx.font = this.get_font()
           break
 
         default:
           this.ctx.filter = "none"
+          this.ctx.fillText(line.text, line.x, line.y)
           break
       }
-      this.ctx.fillText(line.text, line.x, line.y)
+      
     }
   }
 
-  // 文字ぼかし処理
-  set_tag(){
-
-  }
 }
