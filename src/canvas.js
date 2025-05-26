@@ -227,8 +227,9 @@ export class Canvas{
         } else if (match[4]) {
           // テキスト部分
           parts.push({
-            text: match[4],
-            tag: tagStack.length > 0 ? tagStack[tagStack.length - 1] : null
+            text : match[4],
+            tag  : tagStack.length > 0 ? tagStack[tagStack.length - 1] : null,
+            attr : match[2],
           });
         }
       }
