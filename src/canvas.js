@@ -1,3 +1,9 @@
+// import { Zlib } from "./rawinflate.min.js"
+// import "./rawinflate.min.js";
+
+// const { RawInflate } = globalThis.Zlib;
+
+
 export class Canvas{
   setting = {
     selector         : null,
@@ -16,8 +22,12 @@ export class Canvas{
 
   constructor(options){
     if(!options || !options.text){return}
+    this.init(options)
+  }
+
+  async init(options){
     this.options = Object.assign(this.setting, options)
-    this.options.text = this.text_decode(this.options.text, this.options.encode_type)
+    this.options.text = await this.text_decode(this.options.text, this.options.encode_type)
     // 文字表示幅のセット（指定がない場合は文字サイズの1.5倍）
     this.options.line_height = this.options.line_height || this.options.font_size * 1.5
     this.canvas = this.set_canvas(this.options.selector)
@@ -27,16 +37,43 @@ export class Canvas{
   }
 
   // 文字列のでコード（平文の場合はそのまま）
-  text_decode(data , encode_type){
+  async text_decode(data , encode_type){
     if(!data){return ""}
     switch(encode_type){
       case "base64":
         return decodeURIComponent(escape(atob(data)))
         // return btoa(new TextDecoder("utf-8").decode(new TextEncoder().encode(data)))
 
+      case "zlib":
+        await this.load_zlib()
+        const val = atob(data)
+        const chars = ((val)=>{
+          const arr = []
+          for(let i=0; i<val.length; i++){
+            arr.push(val[i].charCodeAt(0))
+          }
+          return new Uint8Array(arr)
+        })(val)
+        const inflate = new Zlib.RawInflate(chars).decompress()
+        const decoded = new TextDecoder().decode(inflate);
+        return decodeURIComponent(decoded);
+
       default:
         return data
     }
+  }
+
+  async load_zlib(){
+    if(document.getElementById("zlib")){return}
+    const script = document.createElement("script")
+    script.src = import.meta.url.split("/").slice(0,-1).join("/") + `/rawinflate.min.js`
+    script.id = "zlib"
+    // スクリプトのロード完了を待つ
+    await new Promise((resolve, reject) => {
+      script.onload = () => resolve()
+      script.onerror = (e) => reject(e)
+      document.head.appendChild(script)
+    });
   }
 
   // 表示処理（再描画でも利用する）
@@ -318,7 +355,6 @@ export class Canvas{
           this.ctx.fillText(line.text, line.x, line.y)
           break
       }
-      
     }
   }
 

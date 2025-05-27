@@ -24,6 +24,11 @@ class Main{
         return base64_encode($text);
         // return base64_encode(urlencode($text));
 
+      case "zlib":
+        $txt1 = urlencode($text);
+        $txt2 = gzdeflate($txt1, 9);
+        return base64_encode($txt2);
+
       default:
         return $text;
     }

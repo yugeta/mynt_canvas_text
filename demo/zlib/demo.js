@@ -1,8 +1,8 @@
-import { Canvas }   from "../src/canvas.js"
+import { Canvas }   from "../../src/canvas.js"
 
 class Demo{
   constructor(){
-    this.encode_type = "base64"
+    this.encode_type = "zlib"
     this.load()
   }
 
@@ -11,7 +11,7 @@ class Demo{
     formData.append("text_path", "../demo/kintaro_blur.txt")
     formData.append("encode_type", this.encode_type)
 
-    const res = await fetch("../src/load_text.php", {
+    const res = await fetch("../../src/load_text.php", {
       method : "POST",
       body   : formData,
     })
