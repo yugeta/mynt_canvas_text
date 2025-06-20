@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+.vscode
+.env
+
+trash
+
+/src/site
+/src/content/site
+/src/data
+/src/plugin
+*.bak
+nohup*

@@ -28,6 +28,9 @@ export class Canvas{
   async init(options){
     this.options = Object.assign(this.setting, options)
     this.options.text = await this.text_decode(this.options.text, this.options.encode_type)
+    if(options.debug){
+      console.log(this.options.text)
+    }
     // 文字表示幅のセット（指定がない場合は文字サイズの1.5倍）
     this.options.line_height = this.options.line_height || this.options.font_size * 1.5
     this.canvas = this.set_canvas(this.options.selector)
@@ -56,7 +59,8 @@ export class Canvas{
         })(val)
         const inflate = new Zlib.RawInflate(chars).decompress()
         const decoded = new TextDecoder().decode(inflate);
-        return decodeURIComponent(decoded);
+        const sanitized = decoded.replace(/\+/g, ' ');
+        return decodeURIComponent(sanitized);
 
       default:
         return data
