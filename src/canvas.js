@@ -85,6 +85,9 @@ export class Canvas{
     this.reset_canvas(long_datas.line_count)
     this.clear_canvas()
     this.draw_lines(lines)
+    console.log("long_datas",long_datas)
+    console.log("short_lines",short_lines)
+    console.log("lines",lines)
   }
 
 
@@ -271,7 +274,8 @@ export class Canvas{
     const regex    = /<(\w+)(.*?)>|<\/(\w+)>|([^<>]+)/g
     const result   = []
     const tagStack = []
-    const lines = text.split(/\r?\n/)
+    // const lines = text.split(/\r?\n/)
+    const lines = this.get_break_line(text)
 
     for (const line of lines) {
       const parts = []
@@ -305,6 +309,12 @@ export class Canvas{
       })
     }
     return result
+  }
+
+  // 改行コードと<br>タグで改行した行別配列を返す
+  get_break_line(text){
+    // return text.split(/\r?\n/)
+    return text.split(/\r?\n|<br\s*\/?>/gi)
   }
 
 
