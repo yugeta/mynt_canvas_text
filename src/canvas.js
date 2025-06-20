@@ -85,9 +85,9 @@ export class Canvas{
     this.reset_canvas(long_datas.line_count)
     this.clear_canvas()
     this.draw_lines(lines)
-    console.log("long_datas",long_datas)
-    console.log("short_lines",short_lines)
-    console.log("lines",lines)
+    // console.log("long_datas",long_datas)
+    // console.log("short_lines",short_lines)
+    // console.log("lines",lines)
   }
 
 
