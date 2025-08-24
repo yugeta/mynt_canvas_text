@@ -33,7 +33,8 @@ export class Canvas{
     }
     // 文字表示幅のセット（指定がない場合は文字サイズの1.5倍）
     this.options.line_height = this.options.line_height || this.options.font_size * 1.5
-    this.canvas = this.set_canvas(this.options.selector)
+    const target = this.target_element(this.options.selector, this.options.element)
+    this.canvas = this.set_canvas(target)
     this.set_canvas_size()
     this.view()
     this.set_event()
@@ -101,7 +102,7 @@ export class Canvas{
 
   // イベント設定
   set_event(){
-    // window.addEventListener("resize", this.resize_window.bind(this)) // windowサイズイベント利用
+    window.addEventListener("resize", this.resize_window.bind(this)) // windowサイズイベント利用
     const observer = new ResizeObserver(this.resize_window.bind(this))
     observer.observe(this.canvas)
   }
@@ -118,10 +119,19 @@ export class Canvas{
    * Canvas
    */
 
+  target_element(selector,elm){
+    if(elm){
+      return elm
+    }
+    else if(selector){
+      return document.querySelector(selector)
+    }
+  }
+
   // 対象canvasの取得処理
-  set_canvas(selector){
-    const target = document.querySelector(selector)
-    if(selector && target.tagName === "CANVAS"){
+  set_canvas(target){
+    // const target = document.querySelector(selector)
+    if(target && target.tagName === "CANVAS"){
       return target
     }
     else{
@@ -149,8 +159,8 @@ export class Canvas{
 
   // canvasサイズのセット（リサイズ事にセットし直す）
   set_canvas_size(){
-    this.canvas.width  = this.canvas.offsetWidth
-    this.canvas.height = this.canvas.offsetHeight
+    this.canvas.width  = this.canvas.parentNode.offsetWidth
+    this.canvas.height = this.canvas.parentNode.offsetHeight
     this.ctx           = this.canvas.getContext("2d")
     this.ctx.font      = this.get_font()
   }
@@ -176,6 +186,7 @@ export class Canvas{
   // canvasの再描画に必要なheightリサイズや、フォント設定処理
   reset_canvas(line_count){
     // ★ 必要な高さを計算して canvas を再設定（ここで高さ確定）
+    
     if(this.setting.height === "auto"){
       this.canvas.height = line_count * this.setting.line_height + (this.setting.padding * 2)
     }
@@ -193,7 +204,9 @@ export class Canvas{
    * Text
    */
   get_wrapper_lines() {
-    const max_width    = this.canvas.width  - this.setting.padding
+    const parent_padding_value = getComputedStyle(this.canvas.parentNode, null).getPropertyValue("padding-left")
+    const padding = parent_padding_value.replace("px", "") || 0
+    const max_width    = this.canvas.width  - this.setting.padding - (padding * 2)
     const lines        = []
     const y_margin     = this.setting.padding + (this.setting.line_height - this.setting.font_size / 2)
     let line_number    = 0
