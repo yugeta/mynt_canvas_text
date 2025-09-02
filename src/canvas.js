@@ -5,6 +5,8 @@
 
 
 export class Canvas{
+  canvas = null
+
   setting = {
     selector         : null,
     text             : "",
@@ -20,9 +22,22 @@ export class Canvas{
     font_variant     : null,
   }
 
+  async get_canvas(){
+    return this.canvas
+  }
+
   constructor(options){
-    if(!options || !options.text){return}
-    this.init(options)
+    this.promise = new Promise((resolve, reject)=>{
+      this.resolve = resolve
+      this.reject  = reject
+      if(!options || !options.text){
+        this.finish()
+      }
+      else{
+        this.init(options)
+      }
+    })
+    this.then = this.promise.then.bind(this.promise)
   }
 
   async init(options){
@@ -385,4 +400,7 @@ export class Canvas{
     }
   }
 
+  finish(){
+    this.resolve(this)
+  }
 }
