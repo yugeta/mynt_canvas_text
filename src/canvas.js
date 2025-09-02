@@ -53,6 +53,7 @@ export class Canvas{
     this.set_canvas_size()
     this.view()
     this.set_event()
+    this.finish()
   }
 
   // 文字列のでコード（平文の場合はそのまま）
@@ -401,6 +402,6 @@ export class Canvas{
   }
 
   finish(){
-    this.resolve(this)
+    this.resolve(this.canvas)
   }
 }
